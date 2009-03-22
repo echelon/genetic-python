@@ -6,7 +6,8 @@ import random
 import Image, ImageDraw
 import aggdraw
 
-from IndividualGA import *
+from GAIndividual import *
+from GAChromosome import *
 
 #
 # TODO:
@@ -17,49 +18,31 @@ from IndividualGA import *
 # up the TODO sections/refactor before adding this.
 #
 
-class IndividualCircle(IndividualGA):
-	# Chromosome length
-	_chromoLength = 0
-
-	# Number of coding sequences
-	_codingSeqs = 0
-
-	# Individual counter
-	_bredCnt    = 0
+class IndivCircle(GAIndividual):
 
 	# Static parameters that must be set before creating
-	__width  = 0
-	__height = 0
+	_width  = 0
+	_height = 0
 
-	geneParamCnt = 8 # TODO - refactor this
-
-	@staticmethod
-	def setCodingLen(length):
+	@classmethod
+	def setImageSize(cls, width, height):
 		"""Set the size of images to be produced, usually to match the target 
 		image. This MUST be called before any individuals are created."""
-		IndividualCircle._codingSeqs = length
-		IndividualCircle._chromoLength = \
-			self.__class__._codingSeqs * self.__class__.geneParamCnt
-
-	@staticmethod
-	def setImageSize(width, height):
-		"""Set the size of images to be produced, usually to match the target 
-		image. This MUST be called before any individuals are created."""
-		IndividualCircle.__width  = width
-		IndividualCircle.__height = height
+		cls._width  = width
+		cls._height = height
 
 
 	def __init__(self, chromo = None):
 		"""Initialize the individual. The gene will either be random, or bred 
 		from others."""
-		IndividualGA.__init__(self, chromo)
+		super(self.__class__, self).__init__(chromo)
 
 		# Unique parameters
 		self.image = None
-		self.geneParamCnt = 8 # TODO: REFACTOR THIS!
 
 
-	def initDNA(self):
+	@classmethod
+	def initDNA(cls):
 		"""Overloadable helper method used to generate any initial DNA strings 
 		that aren't the result of crossover. This forms the initial generation.
 		This is especially useful when overriding the base class."""
@@ -72,29 +55,34 @@ class IndividualCircle(IndividualGA):
 				127,	# g channel
 				127,	# b channel
 				127		# a channel
-			] * self._codingSeqs
+			] * cls._numGenes
 
-		return chromo
+		return GAChromosome(chromo, 8)
 
 
-	def mutate(self):
+	# TODO: Make sure this still works.
+	def mutate(self, times = 1):
 		"""Overridden mutation operator: randomly mutate the value of one codon,
 		with the codon's gene itself selected at random. Can no longer be 
 		performed once drawn."""
 		if self.image != None:
 			return
 
-		mpos = random.randint(0, len(self.chromosome)-1)
-		mtype = mpos % len(self.chromosome)
+		while times > 0:
+			mpos = random.randint(0, len(self.chromosome)-1)
+			mtype = mpos % len(self.chromosome)
 
-		if mtype == 0:
-			# TODO: Make maximum radius size a function of image size
-			self.chromosome[mpos] = random.randint(0, 3000)   # radius
-		elif mtype in (1, 2, 3):
-			maxCord = max(IndividualCircle.__width, IndividualCircle.__height)*2
-			self.chromosome[mpos] = random.randint(-maxCord, maxCord) # x, y, z
-		else:
-			self.chromosome[mpos] = random.randint(0, 255)	  # rgba vals
+			if mtype == 0:
+				# TODO: Make maximum radius size a function of image size
+				self.chromosome[mpos] = random.randint(0, 3000)   # radius
+			elif mtype in (1, 2, 3):
+				maxCord = max(self.__class__._width, self.__class__._height)*2
+				self.chromosome[mpos] = random.randint(-maxCord, maxCord) # x, y, z
+			else:
+				self.chromosome[mpos] = random.randint(0, 255)	  # rgba vals
+
+			self.mutationCnt += 1
+			times -= 1
 
 
 	def evalFitness(self, target, targetThumb):
@@ -169,39 +157,41 @@ class IndividualCircle(IndividualGA):
 			return
 
 		self.image = Image.new("RGBA", 
-			(self.__class__.__width, self.__class__.__height), (0,0,0,0))
+			(self.__class__._width, self.__class__._height), (0,0,0,0))
 		dr = aggdraw.Draw(self.image)
 
-		zList = [] # list of z-indexes
-		cList = [] # list of chromosome index points
+		zIndexList = [] # list of z-indexes
+		gIndexList = [] # list of gene indexes
 
-		# TODO - remove geneParamCnt
-		for i in range(0, len(self.chromosome), self.geneParamCnt): 
+		geneIdx = 0
+		for gene in self.chromosome: 
 			# don't waste CPU drawing invisible (via alpha channel) images
-			if self.chromosome[i+7] is 0:				
+			if gene[7] is 0:	
+				geneIdx+=1			
 				continue
 
-			zList.append(self.chromosome[i+3])
-			cList.append(i)
+			zIndexList.append(gene[3])
+			gIndexList.append(geneIdx)
+			geneIdx+=1
 
-		while len(zList) > 0:
-			zIndexMin = zList.index(min(zList))
-			i = cList[zIndexMin]
-			rad = self.chromosome[i]
-			x = self.chromosome[i+1]
-			y = self.chromosome[i+2]
-			z = self.chromosome[i+3]
-			r = self.chromosome[i+4]
-			g = self.chromosome[i+5]
-			b = self.chromosome[i+6]
-			a = self.chromosome[i+7]
+		while len(zIndexList) > 0:
+			zIndexMin = zIndexList.index(min(zIndexList))
+			geneIdx = gIndexList[zIndexMin]
+			rad = self.chromosome[geneIdx,0]
+			x = self.chromosome[geneIdx,1]
+			y = self.chromosome[geneIdx,2]
+			z = self.chromosome[geneIdx,3]
+			r = self.chromosome[geneIdx,4]
+			g = self.chromosome[geneIdx,5]
+			b = self.chromosome[geneIdx,6]
+			a = self.chromosome[geneIdx,7]
 			col = (r, g, b, a)
 			brush = aggdraw.Brush(col)
 			dr.ellipse((x, y, x+rad, y+rad), None, brush)
 			dr.flush()
 
-			cList.pop(zIndexMin)
-			zList.pop(zIndexMin)
+			zIndexList.pop(zIndexMin)
+			gIndexList.pop(zIndexMin)
 
 		self.image = self.image.convert("RGB")
 
