@@ -1,0 +1,11 @@
+# Ignore these files in Git
+
+*~
+*.[oa]
+*.pyc
+
+*out/*
+*out-*
+*input/*
+*example results/*
+*older code/*

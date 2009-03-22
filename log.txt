@@ -1,0 +1,23 @@
+4. Supplying too many "coding sequences" or "shapes" in my application
+   is problematic. In this type of alpha-channel multi-shape 
+   approximation, shapes depend on one another to reach a solution --
+   this of course leads to inter-shape dependencies that require too
+   many simultaneous good solutions to breach the hamming wall. By
+   limiting the number of coding sequences, there is less dependency
+   and the solution can converge quicker. However, it is unknown the
+   ideal number of coding sequences for this type of problem. 
+
+3. Reaching a hamming wall around 2.5% completion. The algorithm can't
+   make enough good changes at once to break this barrier. Even the 
+   addition of a z-index didn't fix this. 
+
+2. Had problems with the algorithm's speed. It's unknown the rate of 
+   progression to the solution, so I switched from a minimization of
+   difference heuristic to a maximization of similarity heuristic 
+   (no real difference) with the addition of a percent gain statistic
+   that shows how close the solution is to reaching perfection.
+
+1. Removed the "On/Off" switch as this added extra complexity to the 
+   algorithm. The alpha channel being '0' can effectively turn shapes
+   on and off. (Is it problematic that the chance of turning off is 
+   now numChromosomes*numGenes*255*[probabilityOfUnacceptance]?)
