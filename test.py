@@ -19,37 +19,13 @@ class B(A):
 
 if __name__ == '__main__':
 
-	a = GAChromosome([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 3)
+	ch = GAChromosome(range(60), 10)
+	rev = range(1500)
+	rev.reverse()
+	rev = rev[0:100]
+	ch2 = GAChromosome(rev, 10)
 
-	for gene in a:
+	b = ch.cross(ch2)
+
+	for gene in b:
 		print gene
-
-	print ""
-
-	for gene in a:
-		print gene
-
-	print ""
-
-	print a[0]
-	print a[1]
-
-	print a[0:4]
-
-	print ""
-
-	print a[0,0]
-	print a[0,1]
-	print a[0,2]
-
-	print ""
-
-	print a[0,0]
-	print a[1,0]
-	print a[2,0]
-
-	a[0] = 111
-
-	for gene in a:
-		print gene
-

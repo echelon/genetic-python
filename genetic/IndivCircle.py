@@ -40,13 +40,11 @@ class IndivCircle(GAIndividual):
 		# Unique parameters
 		self.image = None
 
-
 	@classmethod
-	def initDNA(cls):
-		"""Overloadable helper method used to generate any initial DNA strings 
-		that aren't the result of crossover. This forms the initial generation.
-		This is especially useful when overriding the base class."""
-		chromo = [
+	def protoGene(cls):
+		"""Return the prototypical gene that is used in both chromosome 
+		initialization as well as random chromosome addition."""
+		return [
 				0,		# Radius
 				-5000,	# x cord - don't initate in a predictable corner,
 				-5000,	# y cord   because that will affect evolution
@@ -55,9 +53,7 @@ class IndivCircle(GAIndividual):
 				127,	# g channel
 				127,	# b channel
 				127		# a channel
-			] * cls._numGenes
-
-		return GAChromosome(chromo, 8)
+		]
 
 
 	# TODO: Make sure this still works.
@@ -69,6 +65,24 @@ class IndivCircle(GAIndividual):
 			return
 
 		while times > 0:
+			xtype = random.randint(0,4)
+			numGenes = self.chromosome.getNumGenes()
+
+			# Remove a gene
+			if xtype == 0 and self.__class__._isNumGenesVariable:
+				if numGenes > self.__class__._initGenes:
+					randGenePos = random.randint(0, numGenes-1)
+					self.chromosome.pop(randGenePos)
+					return
+				
+			# Insert a new gene
+			elif xtype == 1 and self.__class__._isNumGenesVariable:
+				if numGenes < self.__class__._maxGenes:
+					randGenePos = random.randint(0, numGenes)
+					self.chromosome.insert(randGenePos, self.protoGene())
+					return
+				
+			# Else, Normal point mutation
 			mpos = random.randint(0, len(self.chromosome)-1)
 			mtype = mpos % len(self.chromosome)
 

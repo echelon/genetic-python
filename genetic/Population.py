@@ -33,8 +33,8 @@ from IndivCircle import *
 class Population:
 
 	def __init__(self, targetImage, outputDir = "./out",
-		initSize = 5, maxSize = 20, numGenes = 20, 
-		initMutate = 50): # TODO: Fixed length genes -> variable length
+				 initSize = 5, maxSize = 20, initGenes = 5, maxGenes = 30,
+				 initMutate = 50):
 		"""Initialize the target and the population"""
 
 		# Target to approximate
@@ -54,12 +54,14 @@ class Population:
 		self.generation = 0
 		self.improvement = 0
 
-		# Maximum population size
-		self.maxSize = maxSize
+		# Individual gene counts / Population sizes
+		self.initGenes = initGenes
+		self.maxGenes  = maxGenes
 		self.initSize = initSize
+		self.maxSize  = maxSize
 
 		# Prep individual class
-		IndivCircle.setNumGenes(numGenes)
+		IndivCircle.setNumGenes(initGenes, maxGenes)
 		IndivCircle.setImageSize(self.target.size[0], self.target.size[1])
 
 		# Generate initial population - if smaller than eventual size limit,
@@ -213,7 +215,9 @@ class Population:
 			ret += "%.04f" % indiv.scorePercent
 			ret += "\n"
 		ret += "\nParams: InitSize: " + str(self.initSize)
-		ret += " MaxSize: " + str(self.maxSize) + "\n"
+		ret += " MaxSize: " + str(self.maxSize)
+		ret += " InitGenes: " + str(self.initGenes)
+		ret += " MaxGenes: " + str(self.maxGenes) + "\n"
 		return ret
 
 

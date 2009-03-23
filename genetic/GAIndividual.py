@@ -4,11 +4,15 @@
 
 import random
 
-from GAIndividual import *
+from GAChromosome import *
 
 class GAIndividual(object):
 	# Number of genes
-	_numGenes = 0 
+	_initGenes = 0 
+	_maxGenes  = 0 
+
+	# Gene length variable?
+	_isNumGenesVariable  = False
 
 	# Chromosome length enforcement
 	# Set to a number to enforce that length
@@ -18,10 +22,15 @@ class GAIndividual(object):
 	_counter = 0 
 
 	@classmethod
-	def setNumGenes(cls, num):
-		"""Set the number of genes to be present in this individual. This MUST be 
-		called before any individuals are created."""
-		cls._numGenes = num
+	def setNumGenes(cls, initGenes, maxGenes = False):
+		"""Set the number of genes to be present in this individual. This MUST 
+		be called before any individuals are created."""
+		cls._initGenes = initGenes
+		cls._maxGenes  = maxGenes
+		if initGenes == maxGenes or maxGenes == False:
+			cls._isNumGenesVariable = False
+		else:			
+			cls._isNumGenesVariable = True
 
 
 	def __init__(self, chromo = None):
@@ -37,7 +46,7 @@ class GAIndividual(object):
 				raise Exception, "Chromosome length check failed."
 		else:
 			# Initialize as a member of the P generation
-			self.chromosome = self.initDNA()
+			self.chromosome = self.initChromosome()
 
 		# The heuristic score of this individual
 		self.score = None
@@ -54,12 +63,21 @@ class GAIndividual(object):
 
 
 	@classmethod
-	def initDNA(cls):
+	def protoGene(cls):
+		"""Return the prototypical gene that is used in both chromosome 
+		initialization as well as random chromosome addition."""
+		return [0]
+
+
+	@classmethod
+	def initChromosome(cls):
 		"""Overloadable helper method used to generate any initial DNA strings 
 		that aren't the result of crossover. This forms the initial generation.
 		This is especially useful when overriding the base class."""
-		chromo = [0] * cls._numGenes
-		return chromo
+		gene = cls.protoGene()
+		chromo = gene * cls._initGenes # multiply list
+
+		return GAChromosome(chromo, len(gene))
 
 
 	def mutate(self, times = 1):

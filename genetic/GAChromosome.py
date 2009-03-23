@@ -5,13 +5,34 @@
 import random
 
 """
-GAChromosome is a Genetic Algorithm data structure that provides easy access 
+GAChromosome is a Genetic Algorithm Data Structure that provides easy access 
 to chromosome data, length, and a method of subindexing by property. A 
 crossover breeding mechanism is also provided. Mutation, fitness, and other 
 operators are assumed to be controlled by another system or class.
+
+Usage:
+
+	ch = GAChromosome(range(100), 10)
+
+	print ch 			# info
+	print len(ch)		# '100'
+
+	for gene in ch:		# Iteration example
+		print gene		# [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] on first iter, etc...
+
+	while len(ch) > 0:	# Pop example
+		print ch.pop()	# [99, 98, 97, 96, 95, 94, 93, 92, 91, 90], [89,...
+
+	print len			# '0'
+
+	ch = GAChromosome(range(100), 10)
+
+	while len(ch) > 0:	# Dequeue example 
+		print ch.pop(0)	# [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], [10, 11, etc...
+
 """
 
-# TODO: Allow crossover between two differently-sized chromosomes
+# TODO: Fix distribution issues in crossover between two differently-sized chromosomes
 # TODO: Allow crossover between more than two chromosomes (multiparty genetics)
 # TODO: More support for variable length GA's. Check for extra non-gene codons though
 # TODO: Make GAGene a property for __init__(chromo) and return it from accessors when
@@ -67,30 +88,11 @@ class GAChromosome:
 		"""Return the string representation of the object."""
 		ret = ""
 		ret += str(self.__class__.__name__) + " length: " + str(len(self))
-		if self.numProps > 0:
+		if self.numProps > 1:
 			ret += " properties: " + str(self.numProps)
 		else:
 			ret += ". No properties."
 		return ret
-
-	def cross(self, other):
-		"""Cross this chromosome with another to produce offspring"""
-		usedA = 0
-		usedB = 0
-		half = len(self.chromosome)/2
-		chromo = [0]*len(self.chromosome)
-		for i in range(len(self.chromosome)):
-			if usedA < half and random.randint(0, 1):
-				chromo[i] = self.chromosome[i]
-				usedA += 1
-			elif usedB < half:
-				chromo[i] = other.chromosome[i]
-				usedB += 1
-			else:
-				chromo[i] = self.chromosome[i]
-				usedA += 1
-
-		return self.__class__(chromo, self.numProps)
 
 	def __iter__(self):
 		"""Return a chromosome iterator."""
@@ -114,6 +116,131 @@ class GAChromosome:
 		self.iterIndex += self.numProps
 		return ret
 		
+	def pop(self, geneOffset = False):
+		"""Remove a gene from the chromosome."""
+		# List-only (Non-gene) based chromosome
+		if self.numProps < 2:
+			if type(geneOffset) == bool:
+				return self.chromosome.pop()
+			return self.chromosome.pop(geneOffset)
+
+		# Gene-based chromosome (has properties)
+		# Determine starting pop position
+		popPos = 0
+		lastGenePos = len(self.chromosome) - self.numProps
+		if type(geneOffset) == bool:
+			if len(self.chromosome) < self.numProps:
+				raise IndexError, "Not enough data to pop"
+			popPos = lastGenePos
+		elif type(geneOffset) == int:
+			popPos = geneOffset*self.numProps
+			if popPos < 0 or popPos > lastGenePos:
+				raise IndexError, "Pop location is out of bounds"
+
+		gene = self.chromosome[popPos : popPos+self.numProps]
+
+		for i in range(self.numProps):
+			self.chromosome.pop(popPos)
+
+		return gene
+
+	def insert(self, geneOffset, gene):
+		"""Insert a gene into the chromosome at the location specified."""
+		offset = geneOffset
+
+		# Prepare for gene-based chromosome (which have properties)
+		if self.numProps > 1:
+			if type(gene) != list:
+				raise Exception, "Inserted gene must be of type list."
+			if len(gene) != self.numProps:
+				raise Exception, "Inserted gene doesn't match size reqs."
+
+			offset = geneOffset * self.numProps
+
+		# This handles gene and non-gene based chromosomes
+		# Seems to work even with negative offsets!
+		before = self.chromosome[:offset]
+		after  = self.chromosome[offset:]
+		self.chromosome = before + gene + after
+
+	def cross(self, other):
+		"""Cross this chromosome with another to produce offspring. This method
+		supports crossing parents of equal length or creating a child from two
+		parents of different length, with a result length somewhere between the
+		two parents."""
+		lenA = len(self.chromosome)
+		lenB = len(other.chromosome)
+		# Use the old equal-parts cross algorithm, which tries to correct any 
+		# bias that exists in the random number generator (with respect to 
+		# child constitution, not the distribution of order!). This will only
+		# work for equal parent lengths, otherwise use the new algorithm
+		if lenA == lenB:
+			usedA = 0
+			usedB = 0
+			half = len(self.chromosome)/2
+			chromo = [0]*len(self.chromosome)
+			for i in range(len(self.chromosome)):
+				if usedA < half and random.randint(0, 1):
+					chromo[i] = self.chromosome[i]
+					usedA += 1
+				elif usedB < half:
+					chromo[i] = other.chromosome[i]
+					usedB += 1
+				else:
+					chromo[i] = self.chromosome[i]
+					usedA += 1
+
+			return self.__class__(chromo, self.numProps)
+
+		# The parents are of unequal length, so we're going to create a child
+		# chromosome of length somewhere between min and max. This algorithm
+		# doesn't ensure equal contribution or account for RNG bias. Mark TODO.
+
+		minChromo = min(len(self.chromosome), len(other.chromosome))
+		maxChromo = max(len(self.chromosome), len(other.chromosome))
+		childChromoLen = random.randint(minChromo, maxChromo)
+
+		remove = childChromoLen % self.numProps
+		childChromoLen -= remove
+
+		chromo = [0] *childChromoLen
+		usedA = 0
+		usedB = 0
+
+		# TODO:
+		#useA = lenA/2 # equal sizes = equal contribution
+		#useB = lenB/2
+		#if lenA < lenB:
+		#	useA = max(lenA/2, len(chromo)-lenB/2)
+		#	useB = max(lenB/2, len(chromo)-lenA/2)
+		"""
+		len(parA) = 3  || CONTRIBUTE:
+		len(parB) = 9  || parA	parB
+		==============================*self.numProps
+		len(child) = 3 || 1xor2	1xor2	# For uneven output, one contribs more at random
+		len(child) = 4 || 2		2
+		len(child) = 5 || 2xor3	2xor3	# For uneven output, one contribs more at random
+		len(child) = 6 || 3		3
+		len(child) = 7 || 3		4		# For input<half, one gives all, the other fills in
+		len(child) = 8 || 3		5		# For input<half, one gives all, the other fills in
+		len(child) = 9 || 3		6		# For input<half, one gives all, the other fills in
+
+		we need to keep each gene intact, unless there is some change
+		"""
+
+		for i in range(len(chromo)):
+			if random.randint(0, 1) and i < lenA:
+				chromo[i] = self.chromosome[i]
+				usedA += 1
+			elif i < lenB:
+				chromo[i] = other.chromosome[i]
+				usedB += 1
+			else:
+				chromo[i] = self.chromosome[i]
+				usedA += 1
+
+		return self.__class__(chromo, self.numProps)
+
 
 	def getNumGenes(self):
 		"""Return number of genes"""

@@ -30,9 +30,11 @@ def main():
 
 	# File options
 	group = OptionGroup(parser, "File and Directory Options")
-	group.add_option("-f", "--file", dest = "filename", default = None,
+	group.add_option("-f", "--file", dest = "filename", 
+					  default = None,
 					  help = "Input file to evolve to", metavar = "FILE")
-	group.add_option("-o", "--out", dest = "outputDir", default = "./out",
+	group.add_option("-o", "--out", dest = "outputDir", 
+					  default = "./out",
 					  help = "Directory to save output files in", 
 					  metavar = "DIR")
 	parser.add_option_group(group)
@@ -40,9 +42,14 @@ def main():
 	# Individual Options
 	group = OptionGroup(parser, "Individual Options",
 						"These options affect how individuals evolve")
-	group.add_option("-g", "--genes", dest = "numGenes", default = 20,
-					  help = "Number of genes", metavar = "NUM")
-	group.add_option("-m", "--iMutation", dest = "initMutate", default = 50,
+	group.add_option("-i", "--iGenes", dest = "initGenes", 
+					  default = 5,
+					  help = "Initial number of genes", metavar = "NUM")
+	group.add_option("-m", "--mGenes", dest = "maxGenes", 
+					  default = 30,
+					  help = "Maximum number of genes", metavar = "NUM")
+	group.add_option("-x", "--iMutation", dest = "initMutate", 
+					  default = 50,
 					  help = "Number of mutations for initial generation", 
 					  metavar = "NUM")
 	parser.add_option_group(group)
@@ -50,10 +57,11 @@ def main():
 	# Population Options
 	group = OptionGroup(parser, "Population Options",
 						"These options affect the population dynamics")
-	group.add_option("-i", "--iSize", dest = "initSize", default = 5,
-					  help = "Initial size of the population", 
-					  metavar = "SIZE")
-	group.add_option("-s", "--mSize", dest = "maxSize", default = 20,
+	group.add_option("-s", "--iSize", dest = "initSize", 
+					  default = 5,
+					  help = "Initial size of the population", metavar = "SIZE")
+	group.add_option("-l", "--mSize", dest = "maxSize", 
+					  default = 20,
 					  help = "Maximum size of the population", metavar = "SIZE")
 	parser.add_option_group(group)
 
@@ -65,11 +73,14 @@ def main():
 		return
 
 	# Begin evolution
-	P = Population(options.filename, options.outputDir, 
-				   initSize = int(options.initSize), 
-				   maxSize = int(options.maxSize),
-				   numGenes = int(options.numGenes),
+	P = Population(options.filename, 
+				   options.outputDir, 
+				   initSize	  = int(options.initSize), 
+				   maxSize	  = int(options.maxSize),
+				   initGenes  = int(options.initGenes),
+				   maxGenes	  = int(options.maxGenes),
 				   initMutate = int(options.initMutate))
+
 	P.runEvolution()
 
 if __name__ == "__main__": main()
