@@ -46,10 +46,10 @@ def main():
 					  default = 5,
 					  help = "Initial number of genes", metavar = "NUM")
 	group.add_option("-m", "--mGenes", dest = "maxGenes", 
-					  default = 30,
+					  default = 60,
 					  help = "Maximum number of genes", metavar = "NUM")
 	group.add_option("-x", "--iMutation", dest = "initMutate", 
-					  default = 50,
+					  default = 5,
 					  help = "Number of mutations for initial generation", 
 					  metavar = "NUM")
 	parser.add_option_group(group)
@@ -61,7 +61,7 @@ def main():
 					  default = 5,
 					  help = "Initial size of the population", metavar = "SIZE")
 	group.add_option("-l", "--mSize", dest = "maxSize", 
-					  default = 20,
+					  default = 40,
 					  help = "Maximum size of the population", metavar = "SIZE")
 	parser.add_option_group(group)
 

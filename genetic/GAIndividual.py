@@ -33,11 +33,12 @@ class GAIndividual(object):
 			cls._isNumGenesVariable = True
 
 
-	def __init__(self, chromo = None):
+	def __init__(self, chromo = None, generation = None):
 		"""Initialize the individual. The gene will either be random, or bred 
 		from others."""
 		# Copy in chromosomal data if individual is a successor generation
 		if chromo:
+			self.generation = generation
 			if not self.__class__._chromoLenChk:
 				self.chromosome = chromo
 			elif len(chromo) == self.__class__._chromoLenChk:
@@ -47,6 +48,7 @@ class GAIndividual(object):
 		else:
 			# Initialize as a member of the P generation
 			self.chromosome = self.initChromosome()
+			self.generation = 0
 
 		# The heuristic score of this individual
 		self.score = None
@@ -60,6 +62,10 @@ class GAIndividual(object):
 		# Individuals counter
 		self.__class__._counter += 1
 		self.id = self.__class__._counter
+
+		# Parent data - TODO: cross() is not the best place to do this.
+		self.parent1id = 0
+		self.parent2id = 0
 
 
 	@classmethod
@@ -93,11 +99,13 @@ class GAIndividual(object):
 			times -= 1
 
 
-	def cross(self, other):
+	def cross(self, other, generation = None):
 		"""Pass handling of the crossing operator to GAChromosome class and 
 		return a new GAIndividual (or subclass)."""
-		return self.__class__(self.chromosome.cross(other.chromosome))		
-
+		ret = self.__class__(self.chromosome.cross(other.chromosome), generation)		
+		ret.parent1id = self.id
+		ret.parent2id = other.id
+		return ret
 
 	def evalFitness(self):
 		"""The Fitness Evaluation function will rank this individual against a 

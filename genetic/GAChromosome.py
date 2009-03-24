@@ -3,6 +3,7 @@
 # <http://possibilistic.org>
 
 import random
+from copy import copy
 
 """
 GAChromosome is a Genetic Algorithm Data Structure that provides easy access 
@@ -181,13 +182,13 @@ class GAChromosome:
 			chromo = [0]*len(self.chromosome)
 			for i in range(len(self.chromosome)):
 				if usedA < half and random.randint(0, 1):
-					chromo[i] = self.chromosome[i]
+					chromo[i] = copy(self.chromosome[i])
 					usedA += 1
 				elif usedB < half:
-					chromo[i] = other.chromosome[i]
+					chromo[i] = copy(other.chromosome[i])
 					usedB += 1
 				else:
-					chromo[i] = self.chromosome[i]
+					chromo[i] = copy(self.chromosome[i])
 					usedA += 1
 
 			return self.__class__(chromo, self.numProps)
@@ -250,7 +251,7 @@ class GAChromosome:
 			return len(self.chromosome)/self.numProps
 		return 0
 
-	#def getNumProps(self):
-	#	"""Return number of properties per gene"""
-	#	return self.numProps
+	def getNumProps(self):
+		"""Return number of properties per gene"""
+		return self.numProps
 

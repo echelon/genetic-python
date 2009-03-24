@@ -8,14 +8,24 @@ import aggdraw
 
 from GAIndividual import *
 from GAChromosome import *
+from Polygon import *
+from Color import *
 
 #
 # TODO:
-# Add expression depth for the circles - normally circles are drawn one
-# right after the other in a layer, but this can force us into local 
-# extrema very quickly. To combat this, allow a gene to change its expression
-# order (level) by adding a new parameter to each gene. - might want to clean
-# up the TODO sections/refactor before adding this.
+# Change this to a polygon-based system. 
+# Add support for addition/subtraction of points
+# Ensure points are relative to initial point
+# Try to make sure polygons don't overlap themselves - how?
+
+
+#
+# Add/remove points (at any point, not just end)
+# Add/remove polygons
+# Shift polygon up/down
+# Rotate polygon?
+# Grow/shrink polygon in 1 or 2D
+# Affine translations
 #
 
 class IndivCircle(GAIndividual):
@@ -32,29 +42,30 @@ class IndivCircle(GAIndividual):
 		cls._height = height
 
 
-	def __init__(self, chromo = None):
+	def __init__(self, chromo = None, generation = None):
 		"""Initialize the individual. The gene will either be random, or bred 
 		from others."""
-		super(self.__class__, self).__init__(chromo)
+		super(self.__class__, self).__init__(chromo, generation)
 
 		# Unique parameters
 		self.image = None
+
+		self.genesAdd = 0
+		self.genesRem = 0
 
 	@classmethod
 	def protoGene(cls):
 		"""Return the prototypical gene that is used in both chromosome 
 		initialization as well as random chromosome addition."""
-		return [
-				0,		# Radius
-				-5000,	# x cord - don't initate in a predictable corner,
-				-5000,	# y cord   because that will affect evolution
-				0,		# z-index
-				127,	# r channel - neutral values 
-				127,	# g channel
-				127,	# b channel
-				127		# a channel
-		]
+		poly = Polygon(cls._width, cls._height)
+		color = Color()
 
+		return [
+			random.randint(0, 255),	# z-index
+			color,					# color
+			poly					# Polygon
+		]
+		
 
 	# TODO: Make sure this still works.
 	def mutate(self, times = 1):
@@ -64,39 +75,98 @@ class IndivCircle(GAIndividual):
 		if self.image != None:
 			return
 
+		# One or more point mutations
 		while times > 0:
-			xtype = random.randint(0,4)
-			numGenes = self.chromosome.getNumGenes()
+			mutated = False
 
 			# Remove a gene
-			if xtype == 0 and self.__class__._isNumGenesVariable:
+			rand = random.randint(0, 5)
+			numGenes = self.chromosome.getNumGenes()
+			if rand == 0 and self.__class__._isNumGenesVariable:
 				if numGenes > self.__class__._initGenes:
 					randGenePos = random.randint(0, numGenes-1)
 					self.chromosome.pop(randGenePos)
-					return
-				
+					self.genesRem += 1
+					mutated = True
+
 			# Insert a new gene
-			elif xtype == 1 and self.__class__._isNumGenesVariable:
+			rand = random.randint(0, 3)
+			numGenes = self.chromosome.getNumGenes()
+			if rand == 0 and self.__class__._isNumGenesVariable:
 				if numGenes < self.__class__._maxGenes:
 					randGenePos = random.randint(0, numGenes)
 					self.chromosome.insert(randGenePos, self.protoGene())
-					return
-				
-			# Else, Normal point mutation
-			mpos = random.randint(0, len(self.chromosome)-1)
-			mtype = mpos % len(self.chromosome)
+					self.genesAdd += 1
+					mutated = True
 
-			if mtype == 0:
-				# TODO: Make maximum radius size a function of image size
-				self.chromosome[mpos] = random.randint(0, 3000)   # radius
-			elif mtype in (1, 2, 3):
-				maxCord = max(self.__class__._width, self.__class__._height)*2
-				self.chromosome[mpos] = random.randint(-maxCord, maxCord) # x, y, z
-			else:
-				self.chromosome[mpos] = random.randint(0, 255)	  # rgba vals
+			# Z-index mutation
+			gene = random.randint(0, self.chromosome.getNumGenes()-1)
+			if random.randint(0, 4):
+				z = self.chromosome[gene,0]
+				r = random.randint(-5, 5)
+				z += r
+				if z <= 255 and z >= -255:
+					self.chromosome[gene,0] = z
+				else:
+					self.chromosome[gene,0] = z - r
+				mutated = True
+				self.mutationCnt += 1
 
-			self.mutationCnt += 1
-			times -= 1
+			# Color mutation
+			gene = random.randint(0, self.chromosome.getNumGenes()-1)
+			rtype = random.randint(0, 5)
+			if rtype == 0:
+				self.chromosome[gene,1].mutateSingleSmall()
+				mutated = True
+				self.mutationCnt += 1
+			elif rtype == 1:
+				self.chromosome[gene,1].mutateSingleLarge()
+				mutated = True
+				self.mutationCnt += 1
+			elif rtype == 2:
+				self.chromosome[gene,1].mutateWholeSmall()
+				mutated = True
+				self.mutationCnt += 1
+			elif rtype == 3:
+				self.chromosome[gene,1].mutateWholeLarge()
+				mutated = True
+				self.mutationCnt += 1
+
+			# Polygon mutation
+			gene = random.randint(0, self.chromosome.getNumGenes()-1)
+			rtype = random.randint(0, 7)
+			if rtype == 0:
+				self.chromosome[gene,2].initPoints()
+				mutated = True
+				self.mutationCnt += 1
+			elif rtype == 1:
+				self.chromosome[gene,2].addPoint()
+				mutated = True
+				self.mutationCnt += 1
+			elif rtype == 2:
+				self.chromosome[gene,2].remPoint()
+				mutated = True
+				self.mutationCnt += 1
+			elif rtype == 3:
+				self.chromosome[gene,2].mutatePoint()
+				mutated = True
+				self.mutationCnt += 1
+			elif rtype == 4:
+				self.chromosome[gene,2].mutatePoints()
+				mutated = True
+				self.mutationCnt += 1
+			elif rtype == 5:
+				self.chromosome[gene,2].mutateTranslationSmall()
+				mutated = True
+				self.mutationCnt += 1
+			elif rtype == 6:
+				self.chromosome[gene,2].mutateTranslationLarge()
+				mutated = True
+				self.mutationCnt += 1
+
+			# Force at least one mutation for each loop
+			if mutated:
+				times -= 1
 
 
 	def evalFitness(self, target, targetThumb):
@@ -143,24 +213,9 @@ class IndivCircle(GAIndividual):
 
 	def __str__(self):
 		"""The representation of the class when printed."""
-		buf = "INDIVIDUAL:\n"
-		for i in range(0, len(self.chromosome), self.geneParamCnt): # TODO - refactor this
-			buf += ": radius (" + str(self.chromosome[i+0]) + ")"
-			buf += " position (" + str(self.chromosome[i+1]) + \
-				   "," + str(self.chromosome[i+2]) + \
-				   "," + str(self.chromosome[i+3]) + ")"
-			buf += " color (R:" + str(self.chromosome[i+4]) + \
-				   " G:" + str(self.chromosome[i+5])+ \
-				   " B:" + str(self.chromosome[i+6])+ \
-				   " A:" + str(self.chromosome[i+7])+ ")"
-			buf += "\n"
-		buf += "\n"
+		buf = "Indiv ChromoLen: " +str(len(self.chromosome))
 		return buf
 
-
-	####################################################
-	############# CLASS-SPECIFIC FUNCTIONS #############
-	####################################################
 
 	def draw(self):
 		""" Draw the image for the first time. Can only be done once.
@@ -179,29 +234,23 @@ class IndivCircle(GAIndividual):
 
 		geneIdx = 0
 		for gene in self.chromosome: 
-			# don't waste CPU drawing invisible (via alpha channel) images
-			if gene[7] is 0:	
-				geneIdx+=1			
-				continue
-
-			zIndexList.append(gene[3])
+			zIndexList.append(gene[0])
 			gIndexList.append(geneIdx)
 			geneIdx+=1
 
 		while len(zIndexList) > 0:
 			zIndexMin = zIndexList.index(min(zIndexList))
 			geneIdx = gIndexList[zIndexMin]
-			rad = self.chromosome[geneIdx,0]
-			x = self.chromosome[geneIdx,1]
-			y = self.chromosome[geneIdx,2]
-			z = self.chromosome[geneIdx,3]
-			r = self.chromosome[geneIdx,4]
-			g = self.chromosome[geneIdx,5]
-			b = self.chromosome[geneIdx,6]
-			a = self.chromosome[geneIdx,7]
-			col = (r, g, b, a)
+			z = self.chromosome[geneIdx,0]
+			color = self.chromosome[geneIdx,1]
+			poly = self.chromosome[geneIdx,2]
+
+			col = color.getColor()
+			cords = poly.getCords()
 			brush = aggdraw.Brush(col)
-			dr.ellipse((x, y, x+rad, y+rad), None, brush)
+
+			#dr.ellipse((x, y, x+rad, y+rad), None, brush)
+			dr.polygon(cords, None, brush)
 			dr.flush()
 
 			zIndexList.pop(zIndexMin)
