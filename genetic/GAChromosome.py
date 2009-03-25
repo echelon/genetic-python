@@ -45,7 +45,8 @@ class GAChromosome:
 	def __init__(self, chromo = None, numPropsPerGene = 0):
 		"""Initialize a chromosome accessor from a list"""
 		# Copy chromosome from a list
-		self.chromosome = chromo
+		if type(chromo) == list:
+			self.chromosome = chromo[:]
 
 		# Number of properties per gene
 		self.numProps = numPropsPerGene
@@ -73,16 +74,16 @@ class GAChromosome:
 	def __setitem__(self, key, val):
 		"""Assign the chromosome array at an index directly via Ch[0], or 
 		provide access to a computed prop index if the key is a tuple: Ch[5,1].
-		eg Ch[gene, property]."""
+		eg Ch[gene, property]. Any set property is COPIED."""
 		# Index or Slice global mutator (slice throws exception)
 		if type(key) == int or type(key) == slice:
-			self.chromosome[key] = val
+			self.chromosome[key] = copy(val)
 			return
 
 		# ParamNumber,GeneNumber based mutator
 		if type(key) == tuple and self.numProps > 1:
 			i = key[0]*self.numProps + key[1]
-			self.chromosome[i] = val
+			self.chromosome[i] = copy(val)
 			return
 
 	def __str__(self):
@@ -146,7 +147,8 @@ class GAChromosome:
 		return gene
 
 	def insert(self, geneOffset, gene):
-		"""Insert a gene into the chromosome at the location specified."""
+		"""Insert a gene into the chromosome at the location specified. Contents
+		are COPIED."""
 		offset = geneOffset
 
 		# Prepare for gene-based chromosome (which have properties)
@@ -162,7 +164,7 @@ class GAChromosome:
 		# Seems to work even with negative offsets!
 		before = self.chromosome[:offset]
 		after  = self.chromosome[offset:]
-		self.chromosome = before + gene + after
+		self.chromosome = before + copy(gene) + after
 
 	def cross(self, other):
 		"""Cross this chromosome with another to produce offspring. This method
@@ -231,13 +233,13 @@ class GAChromosome:
 
 		for i in range(len(chromo)):
 			if random.randint(0, 1) and i < lenA:
-				chromo[i] = self.chromosome[i]
+				chromo[i] = copy(self.chromosome[i])
 				usedA += 1
 			elif i < lenB:
-				chromo[i] = other.chromosome[i]
+				chromo[i] = copy(other.chromosome[i])
 				usedB += 1
 			else:
-				chromo[i] = self.chromosome[i]
+				chromo[i] = copy(self.chromosome[i])
 				usedA += 1
 
 		return self.__class__(chromo, self.numProps)

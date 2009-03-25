@@ -33,9 +33,17 @@ def main():
 	group.add_option("-f", "--file", dest = "filename", 
 					  default = None,
 					  help = "Input file to evolve to", metavar = "FILE")
-	group.add_option("-o", "--out", dest = "outputDir", 
+	group.add_option("-o", "--outImg", dest = "imgOutputDir", 
 					  default = "./out",
-					  help = "Directory to save output files in", 
+					  help = "Directory to save output images in", 
+					  metavar = "DIR")
+	group.add_option("-p", "--outObj", dest = "objOutputDir", 
+					  default = "./obj",
+					  help = "Directory to save serialized objects in", 
+					  metavar = "DIR")
+	group.add_option("-z", "--loadObjs", dest = "loadObjs", 
+					  default = False,
+					  help = "Load objects from a previous generation?", 
 					  metavar = "DIR")
 	parser.add_option_group(group)
 
@@ -74,7 +82,9 @@ def main():
 
 	# Begin evolution
 	P = Population(options.filename, 
-				   options.outputDir, 
+				   options.imgOutputDir, 
+				   options.objOutputDir, 
+				   loadObjs   = bool(options.loadObjs),
 				   initSize	  = int(options.initSize), 
 				   maxSize	  = int(options.maxSize),
 				   initGenes  = int(options.initGenes),

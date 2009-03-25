@@ -6,6 +6,7 @@ import Image, ImageDraw
 import random
 import math
 import os
+import cPickle as pickle
 
 from GAIndividual import *
 from IndivCircle import * 
@@ -32,9 +33,9 @@ from IndivCircle import *
 
 class Population:
 
-	def __init__(self, targetImage, outputDir = "./out",
-				 initSize = 5, maxSize = 20, initGenes = 5, maxGenes = 30,
-				 initMutate = 5):
+	def __init__(self, targetImage, imgOutputDir = "./out", objOutputDir = "./obj",
+				 loadObjs = False, initSize = 5, maxSize = 20, initGenes = 5, 
+				 maxGenes = 30, initMutate = 5):
 		"""Initialize the target and the population"""
 
 		# Target to approximate
@@ -45,9 +46,14 @@ class Population:
 		)
 
 		# Directory to save evolution result images to
-		self.outputDir = "./out"
-		if outputDir:
-			self.outputDir = outputDir
+		self.imgOutputDir = "./out"
+		if imgOutputDir:
+			self.imgOutputDir = imgOutputDir
+
+		# Directory to save evolution result objects to
+		self.objOutputDir = "./obj"
+		if objOutputDir:
+			self.objOutputDir = objOutputDir
 
 		# Evolution Population
 		self.indivs = []
@@ -64,6 +70,11 @@ class Population:
 		# Prep individual class
 		IndivCircle.setNumGenes(initGenes, maxGenes)
 		IndivCircle.setImageSize(self.target.size[0], self.target.size[1])
+
+		# Load individuals from a previous run?
+		# New individuals will also be generated.
+		if loadObjs:
+			self.indivs = self.loadObjs()
 
 		# Generate initial population - if smaller than eventual size limit,
 		# it will grow in subseqent generations. If set larger (an unwise 
@@ -117,20 +128,46 @@ class Population:
 			print self
 			self.indivs = self.indivs[0:self.maxSize]
 
-
 			# Update Top Score
 			if topScore < self.indivs[0].getScore():
 				topScore = self.indivs[0].getScore()
 
 			self.improvement = topScore - lastTopScore
 
-			# Print Status
-			#print self
-
 			# Save image
-			fname = self.outputDir + "/score-"+str(topScore)+".png"
+			fname = self.imgOutputDir + "/score-"+str(topScore)+".png"
 			if not os.path.isfile(fname):
-				self.indivs[0].saveAs(fname)
+				self.indivs[0].saveImageAs(fname)
+
+			# Pickle object
+			fname = self.objOutputDir + "/score-"+str(topScore)+".pkl"
+			if not os.path.isfile(fname):
+				self.indivs[0].saveObjectAs(fname)
+
+
+	def loadObjs(self, directory = None, limit = 10, reverse = True):
+		"""Use the Pickler to load the Individual objects located in the 
+		files of the directory. Limit and sort order are supported."""
+		if not directory:
+			directory = self.objOutputDir
+
+		files = os.listdir(directory)
+		files.sort(reverse=reverse)
+		count = 0
+		objs = []
+		for fname in files:
+			if count >= limit:
+				break
+			path = directory+'/'+fname
+			size = os.path.getsize(path)
+			if size == 0:
+				continue
+			f = open(path, 'r')
+			obj = pickle.load(f)
+			objs.append(obj)
+			f.close()
+			count += 1
+		return objs
 
 
 	def __str__(self):

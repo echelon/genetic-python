@@ -5,6 +5,7 @@
 import random
 import Image, ImageDraw
 import aggdraw
+import StringIO
 
 from GAIndividual import *
 from GAChromosome import *
@@ -134,7 +135,7 @@ class IndivCircle(GAIndividual):
 
 			# Polygon mutation
 			gene = random.randint(0, self.chromosome.getNumGenes()-1)
-			rtype = random.randint(0, 7)
+			rtype = random.randint(0, 8)
 			if rtype == 0:
 				self.chromosome[gene,2].initPoints()
 				mutated = True
@@ -161,6 +162,10 @@ class IndivCircle(GAIndividual):
 				self.mutationCnt += 1
 			elif rtype == 6:
 				self.chromosome[gene,2].mutateTranslationLarge()
+				mutated = True
+				self.mutationCnt += 1
+			elif rtype == 7:
+				self.chromosome[gene,2].mutateGrowth()
 				mutated = True
 				self.mutationCnt += 1
 
@@ -211,17 +216,13 @@ class IndivCircle(GAIndividual):
 		return self.score
 
 
-	def __str__(self):
-		"""The representation of the class when printed."""
-		buf = "Indiv ChromoLen: " +str(len(self.chromosome))
-		return buf
-
-
 	def draw(self):
-		""" Draw the image for the first time. Can only be done once.
-		Note - Aggdraw was the only library that could draw multi-layered
-		transparent shapes from my experience. Both Cairo and PIL failed 
-		at this simple task. PIL is used in conjunction with Agg."""
+		"""Generate the image for the first time. Can only be done if there is
+		no image that has already been generated (it's called again for unpickled
+		objects to regenerate the image object). Note - 
+		Aggdraw was the only library that could draw multi-layered transparent 
+		shapes from my experience. Both Cairo and PIL failed  at this simple 
+		task. PIL is used in conjunction with Agg."""
 		if self.image != None:
 			return
 
@@ -253,13 +254,32 @@ class IndivCircle(GAIndividual):
 			dr.polygon(cords, None, brush)
 			dr.flush()
 
+			if 0: # Debug - draw dot in center of polygon
+				center = (poly.xAnchor, poly.yAnchor, poly.xAnchor+5, poly.yAnchor+5)
+				dr.ellipse(center, None, aggdraw.Brush((255,0,0,255)))
+				dr.flush()
+
 			zIndexList.pop(zIndexMin)
 			gIndexList.pop(zIndexMin)
 
 		self.image = self.image.convert("RGB")
 
-	def saveAs(self, name):
-		"""Save the image.
-		There is no check to see if it is already saved."""
+	def saveImageAs(self, name):
+		"""Save the image. There is no check to see if it is already saved."""
 		self.image.save(name)
+
+
+	def __getstate__(self):
+		"""Remove/convert unpickleable objects from the dictionary."""
+		dct = self.__dict__.copy()
+		# Can't pickle ImageCore objects - convert to string
+		del dct['image']
+		return dct
+
+	def __setstate__(self, dct):
+		"""Restore pickled objects, and convert objects that were serialized
+		under a different format."""
+		self.__dict__ = dct
+		self.image = None
+		self.draw() # Regenerate Image
 

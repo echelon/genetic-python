@@ -3,6 +3,7 @@
 # <http://possibilistic.org>
 
 import random
+import cPickle as pickle
 
 from GAChromosome import *
 
@@ -80,10 +81,11 @@ class GAIndividual(object):
 		"""Overloadable helper method used to generate any initial DNA strings 
 		that aren't the result of crossover. This forms the initial generation.
 		This is especially useful when overriding the base class."""
-		gene = cls.protoGene()
-		chromo = gene * cls._initGenes # multiply list
+		chromo = []
+		for i in range(cls._initGenes):
+			chromo += cls.protoGene()
 
-		return GAChromosome(chromo, len(gene))
+		return GAChromosome(chromo, len(cls.protoGene()))
 
 
 	def mutate(self, times = 1):
@@ -126,9 +128,23 @@ class GAIndividual(object):
 
 	def __str__(self):
 		"""The representation of the class when printed."""
-		return "Individual #: " + str(self.id)
+		return "Individual #" + str(self.id)
 
 	def __len__(self):
 		"""Return the length of the chromosome."""
 		return len(self.chromosome)
+
+	def saveObjectAs(self, name):
+		"""Serialize the object and save it. There is no check to see if it has
+		already been saved. Program does not quit on error."""
+		#try:
+			# Store pickled analysis objects
+		f = open(name, "w")
+		pickle.dump(self, f, 0) # store serialized ascii
+		f.close()
+
+		#except Exception:
+		#	# Don't hault the program 
+		#	print "***Exception on serializing object!***"
+
 
