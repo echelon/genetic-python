@@ -31,6 +31,69 @@ from IndivCircle import *
 #
 #
 
+"""
+        public static int ActiveAddPointMutationRate = 1500;
+        public static int ActiveAddPolygonMutationRate = 700;
+        public static int ActiveAlphaMutationRate = 1500;
+        public static int ActiveAlphaRangeMax = 60;
+        public static int ActiveAlphaRangeMin = 30;
+        public static int ActiveBlueMutationRate = 1500;
+        public static int ActiveBlueRangeMax = 255;
+        public static int ActiveBlueRangeMin;
+        public static int ActiveGreenMutationRate = 1500;
+        public static int ActiveGreenRangeMax = 255;
+        public static int ActiveGreenRangeMin;
+        public static int ActiveMovePointMaxMutationRate = 1500;
+        public static int ActiveMovePointMidMutationRate = 1500;
+        public static int ActiveMovePointMinMutationRate = 1500;
+
+        public static int ActiveMovePointRangeMid = 20;
+        public static int ActiveMovePointRangeMin = 3;
+        public static int ActiveMovePolygonMutationRate = 700;
+        public static int ActivePointsMax = 1500;
+        public static int ActivePointsMin;
+        public static int ActivePointsPerPolygonMax = 10;
+        public static int ActivePointsPerPolygonMin = 3;
+        public static int ActivePolygonsMax = 255;
+        public static int ActivePolygonsMin;
+        public static int ActiveRedMutationRate = 1500;
+        public static int ActiveRedRangeMax = 255;
+        public static int ActiveRedRangeMin;
+        public static int ActiveRemovePointMutationRate = 1500;
+        public static int ActiveRemovePolygonMutationRate = 1500;
+        private int addPointMutationRate = 1500;
+
+        //Mutation rates
+        private int addPolygonMutationRate = 700;
+        private int alphaMutationRate = 1500;
+        private int alphaRangeMax = 60;
+        private int alphaRangeMin = 30;
+        private int blueMutationRate = 1500;
+        private int blueRangeMax = 255;
+        private int blueRangeMin;
+        private int greenMutationRate = 1500;
+        private int greenRangeMax = 255;
+        private int greenRangeMin;
+        private int movePointMaxMutationRate = 1500;
+        private int movePointMidMutationRate = 1500;
+        private int movePointMinMutationRate = 1500;
+        private int movePointRangeMid = 20;
+        private int movePointRangeMin = 3;
+        private int movePolygonMutationRate = 700;
+        private int pointsMax = 1500;
+        private int pointsMin;
+        private int pointsPerPolygonMax = 10;
+        private int pointsPerPolygonMin = 3;
+        private int polygonsMax = 255;
+        private int polygonsMin;
+        private int redMutationRate = 1500;
+        private int redRangeMax = 255;
+        private int redRangeMin;
+        private int removePointMutationRate = 1500;
+
+        private int removePolygonMutationRate = 1500;
+"""
+
 class Population:
 
 	def __init__(self, targetImage, imgOutputDir = "./out", objOutputDir = "./obj",

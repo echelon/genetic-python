@@ -6,8 +6,8 @@ import random
 
 class Color:
 	"""Representation of colors for the Evolution application."""
-	MIN_ALPHA = 60 #20
-	MAX_ALPHA = 150 #60
+	MIN_ALPHA = 30
+	MAX_ALPHA = 60
 
 	def __init__(self):
 		self.r = random.randint(0, 255)

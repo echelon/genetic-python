@@ -44,7 +44,7 @@ def main():
 	group.add_option("-z", "--loadObjs", dest = "loadObjs", 
 					  default = False,
 					  help = "Load objects from a previous generation?", 
-					  metavar = "DIR")
+					  metavar = "True")
 	parser.add_option_group(group)
 
 	# Individual Options

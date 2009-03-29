@@ -31,7 +31,7 @@ from Color import *
 
 class IndivCircle(GAIndividual):
 
-	# Static parameters that must be set before creating
+	# Must be set before instantiation
 	_width  = 0
 	_height = 0
 
@@ -42,15 +42,13 @@ class IndivCircle(GAIndividual):
 		cls._width  = width
 		cls._height = height
 
-
 	def __init__(self, chromo = None, generation = None):
 		"""Initialize the individual. The gene will either be random, or bred 
 		from others."""
 		super(self.__class__, self).__init__(chromo, generation)
 
-		# Unique parameters
+		# Subclass-specific member vars
 		self.image = None
-
 		self.genesAdd = 0
 		self.genesRem = 0
 
@@ -63,12 +61,10 @@ class IndivCircle(GAIndividual):
 
 		return [
 			random.randint(0, 255),	# z-index
-			color,					# color
-			poly					# Polygon
+			color,
+			poly
 		]
 		
-
-	# TODO: Make sure this still works.
 	def mutate(self, times = 1):
 		"""Overridden mutation operator: randomly mutate the value of one codon,
 		with the codon's gene itself selected at random. Can no longer be 
@@ -173,7 +169,6 @@ class IndivCircle(GAIndividual):
 			if mutated:
 				times -= 1
 
-
 	def evalFitness(self, target, targetThumb):
 		"""The Fitness Evaluation function will rank this individual against a 
 		scoring heursitic designed to identify the best solutions. The 
@@ -186,20 +181,23 @@ class IndivCircle(GAIndividual):
 			return self.score
 
 		if self.image == None:
-			print "IMAGE NOT GENERATED"
-			return False
+			raise Exception, "Image for fitness evaluation was not generated"
 
-		# Too costly to calculate for a fullsize image
-		imThumb = self.image.resize(targetThumb.size)
-		pixOrig = targetThumb.load()
-		pixGen  = None
-		pixGen  = imThumb.load()
+		pixOrig = target.load()
+		pixGen = self.image.load()
+		width = self.image.size[0]
+		height = self.image.size[1]
+
+		if 0: # Test/debug - run faster with a thumbnail compare
+			pixOrig = targetThumb.load()
+			imThumb = self.image.resize(targetThumb.size)
+			pixGen  = imThumb.load()
+			width = imThumb.size[0]
+			height = imThumb.size[1]
 
 		# We're using a maximization scoring heuristic 
 		score = 0
-		width = imThumb.size[0]
-		height = imThumb.size[1]
-		for i in range(width): # TODO
+		for i in range(width):
 			for j in range(height):
 				# The closer the channels are, the higher the score
 				diffR = 255 - abs(pixOrig[i,j][0] - pixGen[i,j][0])
@@ -265,9 +263,9 @@ class IndivCircle(GAIndividual):
 		self.image = self.image.convert("RGB")
 
 	def saveImageAs(self, name):
-		"""Save the image. There is no check to see if it is already saved."""
+		"""Save the image to a file. There is no check to see if the file 
+		already exists."""
 		self.image.save(name)
-
 
 	def __getstate__(self):
 		"""Remove/convert unpickleable objects from the dictionary."""

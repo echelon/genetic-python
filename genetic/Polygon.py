@@ -15,12 +15,12 @@ class Polygon:
 	"""Representation of polygon shapes for the Evolution application."""
 	# Note that these are referenced from 'self' in the methods
 	MIN_POINTS = 3
-	MAX_POINTS = 4
-	MAX_SEP_DENOM = 9
+	MAX_POINTS = 9
+	MAX_SEP_DENOM = 8
 
 	# Growth transformations
-	MIN_GROWTH = 0.3
-	MAX_GROWTH = 1.05
+	MIN_GROWTH = 1.0
+	MAX_GROWTH = 1.0
 
 	# CLASS COUNTER
 	__COUNTER = 0
@@ -82,7 +82,6 @@ class Polygon:
 			yPoints = []
 			numPoints = random.randint(self.__class__.MIN_POINTS, 
 									   self.__class__.MAX_POINTS)
-			numPoints = 3 # TODO TODO TODO TODO - eliminating this variable for testing
 
 			for i in range(numPoints):
 				xPoints.append(random.randint(-self.maxSep, self.maxSep))
