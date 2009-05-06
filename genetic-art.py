@@ -80,6 +80,9 @@ def main():
 		print "Did not supply -f INPUT FILE. Check the help docs with --help."
 		return
 
+	print "DEBUG - NUMBER OF GENES SET STATIC!"
+	genes = int(options.initGenes)
+
 	# Begin evolution
 	P = Population(options.filename, 
 				   options.imgOutputDir, 
@@ -87,8 +90,8 @@ def main():
 				   loadObjs   = bool(options.loadObjs),
 				   initSize	  = int(options.initSize), 
 				   maxSize	  = int(options.maxSize),
-				   initGenes  = int(options.initGenes),
-				   maxGenes	  = int(options.maxGenes),
+				   initGenes  = genes,
+				   maxGenes	  = genes,
 				   initMutate = int(options.initMutate))
 
 	P.runEvolution()

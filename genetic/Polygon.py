@@ -16,7 +16,7 @@ class Polygon:
 	# Note that these are referenced from 'self' in the methods
 	MIN_POINTS = 3
 	MAX_POINTS = 9
-	MAX_SEP_DENOM = 8
+	MAX_SEP_DENOM = 5
 
 	# Growth transformations
 	MIN_GROWTH = 1.0
@@ -98,8 +98,8 @@ class Polygon:
 		use in aggdraw. This takes into account all geometry operations."""
 		points = []
 		for i in range(len(self.xPoints)):
-			points.append(self.xPoints[i]*self.xGrowth+self.xAnchor)
-			points.append(self.yPoints[i]*self.yGrowth+self.yAnchor)
+			points.append(int(self.xPoints[i]*self.xGrowth+self.xAnchor))
+			points.append(int(self.yPoints[i]*self.yGrowth+self.yAnchor))
 
 		if len(points) > self.__class__.MAX_POINTS*2:
 			raise Exception, "Too many points in coordinate system: " + str(points)

@@ -65,109 +65,99 @@ class IndivCircle(GAIndividual):
 			poly
 		]
 		
-	def mutate(self, times = 1):
+	def mutate(self, rate = 1):
 		"""Overridden mutation operator: randomly mutate the value of one codon,
 		with the codon's gene itself selected at random. Can no longer be 
 		performed once drawn."""
 		if self.image != None:
 			return
 
-		# One or more point mutations
-		while times > 0:
-			mutated = False
+		rate = min(rate, 1000) # TODO: Rate hinting not yet implemented.
 
-			# Remove a gene
-			rand = random.randint(0, 5)
-			numGenes = self.chromosome.getNumGenes()
-			if rand == 0 and self.__class__._isNumGenesVariable:
-				if numGenes > self.__class__._initGenes:
-					randGenePos = random.randint(0, numGenes-1)
-					self.chromosome.pop(randGenePos)
-					self.genesRem += 1
-					mutated = True
-
-			# Insert a new gene
-			rand = random.randint(0, 3)
-			numGenes = self.chromosome.getNumGenes()
-			if rand == 0 and self.__class__._isNumGenesVariable:
-				if numGenes < self.__class__._maxGenes:
-					randGenePos = random.randint(0, numGenes)
-					self.chromosome.insert(randGenePos, self.protoGene())
-					self.genesAdd += 1
-					mutated = True
-
-			# Z-index mutation
+		# Color mutation - Single Small
+		if random.randint(0, 5) == 0:
 			gene = random.randint(0, self.chromosome.getNumGenes()-1)
-			if random.randint(0, 4):
-				z = self.chromosome[gene,0]
-				r = random.randint(-5, 5)
-				z += r
-				if z <= 255 and z >= -255:
-					self.chromosome[gene,0] = z
-				else:
-					self.chromosome[gene,0] = z - r
-				mutated = True
-				self.mutationCnt += 1
+			self.chromosome[gene,1].mutateSingleSmall()
+			mutated = True
+			self.mutationCnt += 1
 
-			# Color mutation
+		# Color mutation - Single Large
+		if random.randint(0, 10) == 0:
 			gene = random.randint(0, self.chromosome.getNumGenes()-1)
-			rtype = random.randint(0, 5)
-			if rtype == 0:
-				self.chromosome[gene,1].mutateSingleSmall()
-				mutated = True
-				self.mutationCnt += 1
-			elif rtype == 1:
-				self.chromosome[gene,1].mutateSingleLarge()
-				mutated = True
-				self.mutationCnt += 1
-			elif rtype == 2:
-				self.chromosome[gene,1].mutateWholeSmall()
-				mutated = True
-				self.mutationCnt += 1
-			elif rtype == 3:
-				self.chromosome[gene,1].mutateWholeLarge()
-				mutated = True
-				self.mutationCnt += 1
+			self.chromosome[gene,1].mutateSingleLarge()
+			mutated = True
+			self.mutationCnt += 5
 
-			# Polygon mutation
+		# Color mutation - Whole Small
+		if random.randint(0, 100) == 0:
 			gene = random.randint(0, self.chromosome.getNumGenes()-1)
-			rtype = random.randint(0, 8)
-			if rtype == 0:
-				self.chromosome[gene,2].initPoints()
-				mutated = True
-				self.mutationCnt += 1
-			elif rtype == 1:
-				self.chromosome[gene,2].addPoint()
-				mutated = True
-				self.mutationCnt += 1
-			elif rtype == 2:
-				self.chromosome[gene,2].remPoint()
-				mutated = True
-				self.mutationCnt += 1
-			elif rtype == 3:
-				self.chromosome[gene,2].mutatePoint()
-				mutated = True
-				self.mutationCnt += 1
-			elif rtype == 4:
-				self.chromosome[gene,2].mutatePoints()
-				mutated = True
-				self.mutationCnt += 1
-			elif rtype == 5:
-				self.chromosome[gene,2].mutateTranslationSmall()
-				mutated = True
-				self.mutationCnt += 1
-			elif rtype == 6:
-				self.chromosome[gene,2].mutateTranslationLarge()
-				mutated = True
-				self.mutationCnt += 1
-			elif rtype == 7:
-				self.chromosome[gene,2].mutateGrowth()
-				mutated = True
-				self.mutationCnt += 1
+			self.chromosome[gene,1].mutateWholeSmall()
+			mutated = True
+			self.mutationCnt += 100
 
-			# Force at least one mutation for each loop
-			if mutated:
-				times -= 1
+		# Color mutation - Whole Large
+		if random.randint(0, 1000) == 0:
+			gene = random.randint(0, self.chromosome.getNumGenes()-1)
+			self.chromosome[gene,1].mutateWholeLarge()
+			mutated = True
+			self.mutationCnt += 5000
+
+
+		# Polygon Re-init
+		if random.randint(0, 10) == 0:
+			gene = random.randint(0, self.chromosome.getNumGenes()-1)
+			self.chromosome[gene,2].initPoints()
+			mutated = True
+			self.mutationCnt += 100
+
+		# Polygon Add Point
+		if random.randint(0, 10) == 0:
+			gene = random.randint(0, self.chromosome.getNumGenes()-1)
+			self.chromosome[gene,2].addPoint()
+			mutated = True
+			self.mutationCnt += 10
+
+		# Polygon Remove Point
+		if random.randint(0, 7) == 0:
+			gene = random.randint(0, self.chromosome.getNumGenes()-1)
+			self.chromosome[gene,2].remPoint()
+			mutated = True
+			self.mutationCnt += 10
+		
+		# Polygon Mutate Point
+		if random.randint(0, 4) == 0:
+			gene = random.randint(0, self.chromosome.getNumGenes()-1)
+			self.chromosome[gene,2].mutatePoint()
+			mutated = True
+			self.mutationCnt += 1
+
+		# Polygon Mutate Points
+		if random.randint(0, 6) == 0:
+			gene = random.randint(0, self.chromosome.getNumGenes()-1)
+			self.chromosome[gene,2].mutatePoints()
+			mutated = True
+			self.mutationCnt += 3
+
+		# Polygon Mutate Translation Small
+		if random.randint(0, 4) == 0:
+			gene = random.randint(0, self.chromosome.getNumGenes()-1)
+			self.chromosome[gene,2].mutateTranslationSmall()
+			mutated = True
+			self.mutationCnt += 5
+
+		# Polygon Mutation Translation Large
+		if random.randint(0, 10) == 0:
+			gene = random.randint(0, self.chromosome.getNumGenes()-1)
+			self.chromosome[gene,2].mutateTranslationLarge()
+			mutated = True
+			self.mutationCnt += 10
+
+		# TODO: Mutate Growth removed!
+
+		# TODO: Add/Remove genes
+
+		# TODO: Z-index mutations
+
 
 	def evalFitness(self, target, targetThumb):
 		"""The Fitness Evaluation function will rank this individual against a 
@@ -204,11 +194,12 @@ class IndivCircle(GAIndividual):
 				diffG = 255 - abs(pixOrig[i,j][1] - pixGen[i,j][1])
 				diffB = 255 - abs(pixOrig[i,j][2] - pixGen[i,j][2])
 
-				score += diffR + diffG + diffB
+				# TODO - test new scoring heuristic
+				score += diffR*diffR + diffG*diffG + diffB*diffB 
 
 		self.score = score
 
-		maxScore = width * height * 255.0
+		maxScore = width * height * 255.0 * 255.0 * 3 # TODO - test new scoring heuristic.
 		self.scorePercent = score / maxScore
 
 		return self.score

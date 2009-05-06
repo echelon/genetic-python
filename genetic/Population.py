@@ -32,36 +32,39 @@ from IndivCircle import *
 #
 
 """
+        private int addPointMutationRate = 1500;
         public static int ActiveAddPointMutationRate = 1500;
         public static int ActiveAddPolygonMutationRate = 700;
         public static int ActiveAlphaMutationRate = 1500;
-        public static int ActiveAlphaRangeMax = 60;
-        public static int ActiveAlphaRangeMin = 30;
-        public static int ActiveBlueMutationRate = 1500;
-        public static int ActiveBlueRangeMax = 255;
-        public static int ActiveBlueRangeMin;
         public static int ActiveGreenMutationRate = 1500;
-        public static int ActiveGreenRangeMax = 255;
-        public static int ActiveGreenRangeMin;
+        public static int ActiveBlueMutationRate = 1500;
         public static int ActiveMovePointMaxMutationRate = 1500;
         public static int ActiveMovePointMidMutationRate = 1500;
         public static int ActiveMovePointMinMutationRate = 1500;
+        public static int ActiveRemovePointMutationRate = 1500;
+
+        public static int ActiveMovePolygonMutationRate = 700;
+        public static int ActiveRemovePolygonMutationRate = 1500;
+
+
+        public static int ActiveRedMutationRate = 1500;
+        public static int ActiveAlphaRangeMax = 60;
+        public static int ActiveAlphaRangeMin = 30;
+        public static int ActiveBlueRangeMax = 255;
+        public static int ActiveBlueRangeMin;
+        public static int ActiveGreenRangeMax = 255;
+        public static int ActiveGreenRangeMin;
 
         public static int ActiveMovePointRangeMid = 20;
         public static int ActiveMovePointRangeMin = 3;
-        public static int ActiveMovePolygonMutationRate = 700;
         public static int ActivePointsMax = 1500;
         public static int ActivePointsMin;
         public static int ActivePointsPerPolygonMax = 10;
         public static int ActivePointsPerPolygonMin = 3;
         public static int ActivePolygonsMax = 255;
         public static int ActivePolygonsMin;
-        public static int ActiveRedMutationRate = 1500;
         public static int ActiveRedRangeMax = 255;
         public static int ActiveRedRangeMin;
-        public static int ActiveRemovePointMutationRate = 1500;
-        public static int ActiveRemovePolygonMutationRate = 1500;
-        private int addPointMutationRate = 1500;
 
         //Mutation rates
         private int addPolygonMutationRate = 700;
@@ -176,13 +179,15 @@ class Population:
 					iParentB = random.randint(0, topIndex)
 
 				child = self.indivs[iParentA].cross(self.indivs[iParentB], self.generation)	
-				child.mutate(topIndex) 
+				rate = topIndex*2
+				child.mutate(rate) 
 				child.draw()
 				child.evalFitness(self.target, self.targetThumb)
 				self.indivs.append(child)
 
 				# Increse breeding index size, but don't include bad individuals
 				topIndex = min(topIndex+1, self.maxSize-1, len(self.indivs)-1) 
+				topIndex = min(topIndex, len(self.indivs)/5)
 
 
 			# Sort by performance, and cull the straglers
@@ -239,7 +244,7 @@ class Population:
 		ret = ""
 		ret += "\tGENERATION " + str(self.generation)
 		ret += " (improved " + str(self.improvement) + ")\n\n"
-		ret += "gen\tid\tgenes\tmut\tadd\trem\tP1/P2\t\tscore (percent)\n"
+		ret += "gen\tid\tgenes\tmut\tadd/rem\tP1/P2\t\tscore (percent)\n"
 		for i in range(len(self.indivs)-1): # TODO: Only show the top 10
 			indiv = self.indivs[i]
 			gen = indiv.generation
@@ -251,7 +256,7 @@ class Population:
  			ret += str(indiv.id) + "\t"
 			ret += str(indiv.chromosome.getNumGenes()) + "\t"
 			ret += str(indiv.mutationCnt) + "\t"
-			ret += str(indiv.genesAdd) + "\t"
+			ret += str(indiv.genesAdd) + "/"
 			ret += str(indiv.genesRem) + "\t"
 			ret += str(indiv.parent1id) + "/"
 			ret += str(indiv.parent2id) + "\t\t"
