@@ -9,102 +9,19 @@ import os
 import cPickle as pickle
 
 from GAIndividual import *
-from IndivCircle import * 
+from IndivPoly import * 
 
-# TODO: Population should be generic. make PopCircle, PopPixel, etc.
-# TODO: Better way to track improvement/percentGain statistics. New class? Graphing?
-
-# TODO: Huge project for mathematical proving/better heuristics/rates ->
-# Track historical mutations in codons and cross points, also taking into account
-# variable lengths and a possible expansion to GP's that will allow us to build a 
-# model for crossover potential and mutation rate statistics
-#
-
-#
-#
-#
-# TODO/ README/ FIXME
-# If I get back and evolution hasn't changed much (currently below 2.6%), then
-# implement variable-length GA's and a much more dynamic generation mutation 
-# scheme
-#
-#
-#
-
-"""
-        private int addPointMutationRate = 1500;
-        public static int ActiveAddPointMutationRate = 1500;
-        public static int ActiveAddPolygonMutationRate = 700;
-        public static int ActiveAlphaMutationRate = 1500;
-        public static int ActiveGreenMutationRate = 1500;
-        public static int ActiveBlueMutationRate = 1500;
-        public static int ActiveMovePointMaxMutationRate = 1500;
-        public static int ActiveMovePointMidMutationRate = 1500;
-        public static int ActiveMovePointMinMutationRate = 1500;
-        public static int ActiveRemovePointMutationRate = 1500;
-
-        public static int ActiveMovePolygonMutationRate = 700;
-        public static int ActiveRemovePolygonMutationRate = 1500;
-
-
-        public static int ActiveRedMutationRate = 1500;
-        public static int ActiveAlphaRangeMax = 60;
-        public static int ActiveAlphaRangeMin = 30;
-        public static int ActiveBlueRangeMax = 255;
-        public static int ActiveBlueRangeMin;
-        public static int ActiveGreenRangeMax = 255;
-        public static int ActiveGreenRangeMin;
-
-        public static int ActiveMovePointRangeMid = 20;
-        public static int ActiveMovePointRangeMin = 3;
-        public static int ActivePointsMax = 1500;
-        public static int ActivePointsMin;
-        public static int ActivePointsPerPolygonMax = 10;
-        public static int ActivePointsPerPolygonMin = 3;
-        public static int ActivePolygonsMax = 255;
-        public static int ActivePolygonsMin;
-        public static int ActiveRedRangeMax = 255;
-        public static int ActiveRedRangeMin;
-
-        //Mutation rates
-        private int addPolygonMutationRate = 700;
-        private int alphaMutationRate = 1500;
-        private int alphaRangeMax = 60;
-        private int alphaRangeMin = 30;
-        private int blueMutationRate = 1500;
-        private int blueRangeMax = 255;
-        private int blueRangeMin;
-        private int greenMutationRate = 1500;
-        private int greenRangeMax = 255;
-        private int greenRangeMin;
-        private int movePointMaxMutationRate = 1500;
-        private int movePointMidMutationRate = 1500;
-        private int movePointMinMutationRate = 1500;
-        private int movePointRangeMid = 20;
-        private int movePointRangeMin = 3;
-        private int movePolygonMutationRate = 700;
-        private int pointsMax = 1500;
-        private int pointsMin;
-        private int pointsPerPolygonMax = 10;
-        private int pointsPerPolygonMin = 3;
-        private int polygonsMax = 255;
-        private int polygonsMin;
-        private int redMutationRate = 1500;
-        private int redRangeMax = 255;
-        private int redRangeMin;
-        private int removePointMutationRate = 1500;
-
-        private int removePolygonMutationRate = 1500;
-"""
+# XXX XXX XXX THIS IS VERY, VERY BAD CODE.
 
 class Population:
 
-	def __init__(self, targetImage, imgOutputDir = "./out", objOutputDir = "./obj",
-				 loadObjs = False, initSize = 5, maxSize = 20, initGenes = 5, 
-				 maxGenes = 30, initMutate = 5):
+	def __init__(self, populationName, targetImage, imgOutputDir = "./out", 
+				objOutputDir = "./obj", loadObjs = False, initSize = 5, 
+				maxSize = 20, initGenes = 5, maxGenes = 30, initMutate = 5):
 		"""Initialize the target and the population"""
 
 		# Target to approximate
+		self.name = populationName
 		self.target = Image.open(targetImage)
 		self.targetThumb = self.target.resize(
 			(self.target.size[0]/4,
@@ -112,14 +29,10 @@ class Population:
 		)
 
 		# Directory to save evolution result images to
-		self.imgOutputDir = "./out"
-		if imgOutputDir:
-			self.imgOutputDir = imgOutputDir
+		self.imgOutputDir = imgOutputDir
 
 		# Directory to save evolution result objects to
-		self.objOutputDir = "./obj"
-		if objOutputDir:
-			self.objOutputDir = objOutputDir
+		self.objOutputDir = objOutputDir
 
 		# Evolution Population
 		self.indivs = []
@@ -134,8 +47,8 @@ class Population:
 		self.initMutate = initMutate
 
 		# Prep individual class
-		IndivCircle.setNumGenes(initGenes, maxGenes)
-		IndivCircle.setImageSize(self.target.size[0], self.target.size[1])
+		IndivPoly.setNumGenes(initGenes, maxGenes)
+		IndivPoly.setImageSize(self.target.size[0], self.target.size[1])
 
 		# Load individuals from a previous run?
 		# New individuals will also be generated.
@@ -150,7 +63,7 @@ class Population:
 			size = self.initSize
 
 		for i in range(size):
-			indiv = IndivCircle()
+			indiv = IndivPoly()
 			for x in range(initMutate):
 				indiv.mutate()
 			indiv.draw()
@@ -169,6 +82,18 @@ class Population:
 		while(topScore < 9999999999999): 
 			lastTopScore = topScore
 			self.generation += 1
+
+			# Import from other processes
+			# TODO: Make a switch to turn this off.
+			if self.generation % 10 == 0:
+				imported = self.loadObjs()
+				if type(imported) == list and len(imported) > 0:
+					self.indivs += imported
+
+			# Cull all imported every 55 generations.
+			#if self.generation % 55 == 0:
+			#	for i in range(len(self.indivs)):
+			#		if
 
 			# Dynamic evolution - best first.
 			topIndex = 1
@@ -232,17 +157,17 @@ class Population:
 				continue
 			f = open(path, 'r')
 			obj = pickle.load(f)
+			obj.imported = True
 			objs.append(obj)
 			f.close()
 			count += 1
 		return objs
 
-
 	def __str__(self):
 		"""Represent the generation's statistics. Used for tracking the 
 		evolutionary improvement and performance as well as debugging."""
 		ret = ""
-		ret += "\tGENERATION " + str(self.generation)
+		ret += "\tGENERATION %d (%s)"  % (self.generation, self.name)
 		ret += " (improved " + str(self.improvement) + ")\n\n"
 		ret += "gen\tid\tgenes\tmut\tadd/rem\tP1/P2\t\tscore (percent)\n"
 		for i in range(len(self.indivs)-1): # TODO: Only show the top 10
@@ -262,15 +187,17 @@ class Population:
 			ret += str(indiv.parent2id) + "\t\t"
 			ret += str(indiv.getScore()) + " (" 
 			ret += "%.04f" % indiv.scorePercent + "%)\t"
+			if indiv.imported:
+				ret += "IMPORTED "
 			if i >= self.maxSize:
-				ret += "*d"
+				ret += "*deleted"
 			ret += "\n"
 		ret += "\nParams: InitSize: " + str(self.initSize)
 		ret += " MaxSize: " + str(self.maxSize)
 		ret += " InitGenes: " + str(self.initGenes)
 		ret += " MaxGenes: " + str(self.maxGenes)
 		ret += " InitMutate: " + str(self.initMutate) + "\n"
-		ret += "\tGENERATION " + str(self.generation)
+		ret += "\tGENERATION %d (%s)"  % (self.generation, self.name)
 		ret += " (improved " + str(self.improvement) + ")\n"
 		return ret
 

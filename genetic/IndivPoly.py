@@ -29,7 +29,7 @@ from Color import *
 # Affine translations
 #
 
-class IndivCircle(GAIndividual):
+class IndivPoly(GAIndividual):
 
 	# Must be set before instantiation
 	_width  = 0
@@ -51,6 +51,7 @@ class IndivCircle(GAIndividual):
 		self.image = None
 		self.genesAdd = 0
 		self.genesRem = 0
+		self.imported = False # Flag individuals imported from another process
 
 	@classmethod
 	def protoGene(cls):
@@ -113,14 +114,14 @@ class IndivCircle(GAIndividual):
 		# Polygon Add Point
 		if random.randint(0, 10) == 0:
 			gene = random.randint(0, self.chromosome.getNumGenes()-1)
-			self.chromosome[gene,2].addPoint()
+			self.chromosome[gene,2].mutateAddPoint()
 			mutated = True
 			self.mutationCnt += 10
 
 		# Polygon Remove Point
 		if random.randint(0, 7) == 0:
 			gene = random.randint(0, self.chromosome.getNumGenes()-1)
-			self.chromosome[gene,2].remPoint()
+			self.chromosome[gene,2].mutateRemovePoint()
 			mutated = True
 			self.mutationCnt += 10
 		

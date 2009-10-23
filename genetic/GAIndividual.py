@@ -137,14 +137,14 @@ class GAIndividual(object):
 	def saveObjectAs(self, name):
 		"""Serialize the object and save it. There is no check to see if it has
 		already been saved. Program does not quit on error."""
-		#try:
+		try:
 			# Store pickled analysis objects
-		f = open(name, "w")
-		pickle.dump(self, f, 0) # store serialized ascii
-		f.close()
+			f = open(name, "w")
+			pickle.dump(self, f, 0) # store serialized ascii
+			f.close()
 
-		#except Exception:
-		#	# Don't hault the program 
-		#	print "***Exception on serializing object!***"
+		except Exception:
+			# Don't hault the program 
+			print "***Exception on serializing object!***"
 
 
