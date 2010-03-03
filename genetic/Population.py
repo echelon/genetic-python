@@ -143,8 +143,6 @@ class Population:
 
 			# Save image
 			fname = self.imgOutputDir + "/score-"+str(topScore)+".png"
-			print fname
-			print doSave
 			if doSave and not os.path.isfile(fname):
 				self.indivs[0].saveImageAs(fname)
 
