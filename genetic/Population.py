@@ -77,6 +77,12 @@ class Population:
 
 		topScore = 0
 		lastTopScore = 0
+
+		# Prevent disk from being accessed so much (although I doubt this is 
+		# the real bottleneck in this algo. It just needs to be trashed and 
+		# rebuilt. 10/03/02
+		saveIter = -1
+		SAVE_ONCE_EVERY_N = 8
 	
 		# Run Each Generation
 		while(topScore < 9999999999999): 
@@ -103,7 +109,8 @@ class Population:
 				while iParentA == iParentB:
 					iParentB = random.randint(0, topIndex)
 
-				child = self.indivs[iParentA].cross(self.indivs[iParentB], self.generation)	
+				child = self.indivs[iParentA].cross(self.indivs[iParentB],
+												    self.generation)	
 				rate = topIndex*2
 				child.mutate(rate) 
 				child.draw()
@@ -127,14 +134,23 @@ class Population:
 
 			self.improvement = topScore - lastTopScore
 
+			doSave = False
+			saveIter += 1
+			if saveIter == 0:
+				doSave = True
+			elif saveIter == SAVE_ONCE_EVERY_N:
+				saveIter = -1 
+
 			# Save image
 			fname = self.imgOutputDir + "/score-"+str(topScore)+".png"
-			if not os.path.isfile(fname):
+			print fname
+			print doSave
+			if doSave and not os.path.isfile(fname):
 				self.indivs[0].saveImageAs(fname)
 
 			# Pickle object
 			fname = self.objOutputDir + "/score-"+str(topScore)+".pkl"
-			if not os.path.isfile(fname):
+			if doSave and not os.path.isfile(fname):
 				self.indivs[0].saveObjectAs(fname)
 
 

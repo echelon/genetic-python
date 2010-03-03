@@ -10,7 +10,7 @@ import aggdraw
 import os
 from optparse import *
 
-from genetic.IndivCircle import *
+from genetic.IndivPoly import *
 from genetic.Population import *
 
 """
@@ -84,7 +84,8 @@ def main():
 	genes = int(options.initGenes)
 
 	# Begin evolution
-	P = Population(options.filename, 
+	P = Population("TODO",
+				   options.filename, 
 				   options.imgOutputDir, 
 				   options.objOutputDir, 
 				   loadObjs   = bool(options.loadObjs),

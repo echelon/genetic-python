@@ -174,17 +174,19 @@ class IndivPoly(GAIndividual):
 		if self.image == None:
 			raise Exception, "Image for fitness evaluation was not generated"
 
+		# XXX: Compare against full-size image, NOT thumbnail
 		pixOrig = target.load()
 		pixGen = self.image.load()
 		width = self.image.size[0]
 		height = self.image.size[1]
 
-		if 0: # Test/debug - run faster with a thumbnail compare
-			pixOrig = targetThumb.load()
-			imThumb = self.image.resize(targetThumb.size)
-			pixGen  = imThumb.load()
-			width = imThumb.size[0]
-			height = imThumb.size[1]
+		# 10/03/02 - already if 0:, so commenting out entirely. 
+		#if 0: # Test/debug - run faster with a thumbnail compare
+		#	pixOrig = targetThumb.load()
+		#	imThumb = self.image.resize(targetThumb.size)
+		#	pixGen  = imThumb.load()
+		#	width = imThumb.size[0]
+		#	height = imThumb.size[1]
 
 		# We're using a maximization scoring heuristic 
 		score = 0
